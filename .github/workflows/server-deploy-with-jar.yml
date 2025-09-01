@@ -71,7 +71,7 @@ jobs:
         with:
           host: ${{secrets.EC2_HOST2}}
           username: ubuntu
-          #          pemkey를 통해 해당 인스턴스에 접근
+          # pemkey를 통해 해당 인스턴스에 접근
           key: ${{secrets.EC2_PEMKEY}}
           source: "./build/libs/*.jar"
           target: "/home/ubuntu"
@@ -81,7 +81,7 @@ jobs:
         with:
           host: ${{secrets.EC2_HOST2}}
           username: ubuntu
-          #          pemkey를 통해 해당 인스턴스에 접근
+          # pemkey를 통해 해당 인스턴스에 접근
           key: ${{secrets.EC2_PEMKEY}}
           script: |
             if ! type java > /dev/null; then
