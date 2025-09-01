@@ -1,0 +1,67 @@
+# GitHub Actions 워크플로 이름 (Actions 탭에 표기)
+name: deploy to ec2 with jar
+
+# 트리거: main에 push 되면 이벤트 실행
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # 단일 잡: 빌드 후 두 개의 EC2에 배포
+  build-and-deploy:
+    # 실행 러너: GitHub가 제공하는 최신 Ubuntu 이미지
+    runs-on: ubuntu-latest
+    steps:
+      # 1) 저장소 체크아웃: 러너에 현재 리포지토리 코드를 내려받음
+      - name: checkout branch
+        uses: actions/checkout@v2
+
+      # 2) JDK 17 세팅: Gradle 빌드 및 Spring Boot 실행을 위한 Java 설치
+      - name: setup java
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'   # Eclipse Temurin 배포판
+
+      # 3) JAR 빌드: Gradle Wrapper 권한 부여 후 bootJar 실행
+      - name: build jar
+        working-directory: .        # 리포지토리 루트에서 실행
+        run: |
+          chmod 777 ./gradlew
+          ./gradlew bootJar
+
+      # 4) (EC2 #1) 빌드 산출물 복사: appleboy/scp-action으로 JAR 업로드
+      - name: copy jar to ec2 inst1
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{secrets.EC2_HOST1}}    # 대상 EC2 퍼블릭 IP 또는 호스트명
+          username: ubuntu                # 접속 사용자 (우분투 기본 계정)
+          # pemkey를 통해 해당 인스턴스에 접근
+          key: ${{secrets.EC2_PEMKEY}}    # SSH 개인키(PEM)를 GitHub Secrets로 관리
+          source: "./build/libs/*.jar"    # 로컬에서 복사할 파일 패턴
+          target: "/home/ubuntu"          # 원격 서버의 대상 경로(디렉터리)
+
+      # 5) (EC2 #1) SSH 접속 후 JDK 설치/앱 실행
+      - name: install java and run jar on ec2 inst1
+        uses: appleboy/ssh-action@master  # SSH로 원격 명령 실행
+        with:
+          host: ${{secrets.EC2_HOST1}}
+          username: ubuntu
+          # pemkey를 통해 해당 인스턴스에 접근
+          key: ${{secrets.EC2_PEMKEY}}
+          # 원격 서버에서 수행될 linux shell script
+          script: |
+            if ! type java > /dev/null; then
+              sudo apt-get update && sudo apt-get install openjdk-17-jdk -y
+            else
+              echo "java is already installed"
+            fi
+            sudo killall java
+            nohup java -jar /home/ubuntu/build/libs/*.jar \
+            --spring.redis.host=${{secrets.REDIS_HOST}} \
+            --jwt.secretKeyAt=${{secrets.AT_SECRET_KEY}} \
+            --jwt.secretKeyRt=${{secrets.RT_SECRET_KEY}} \
+            --spring.datasource.url=jdbc:mariadb://${{secrets.DB_HOST}}:3306/ordersystem \
+            --spring.datasource.username=admin \
+            --spring.datasource.password=${{secrets.DB_PW}} > /home/ubuntu/app.log 2>&1 &
