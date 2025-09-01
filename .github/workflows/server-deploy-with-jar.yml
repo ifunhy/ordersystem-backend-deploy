@@ -22,11 +22,11 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '17'
-          distribution: 'temurin'   # Eclipse Temurin 배포판
+          distribution: 'temurin'
 
       # 3) JAR 빌드: Gradle Wrapper 권한 부여 후 bootJar 실행
       - name: build jar
-        working-directory: .        # 리포지토리 루트에서 실행
+        working-directory: .
         run: |
           chmod 777 ./gradlew
           ./gradlew bootJar
@@ -35,16 +35,16 @@ jobs:
       - name: copy jar to ec2 inst1
         uses: appleboy/scp-action@master
         with:
-          host: ${{secrets.EC2_HOST1}}    # 대상 EC2 퍼블릭 IP 또는 호스트명
-          username: ubuntu                # 접속 사용자 (우분투 기본 계정)
+          host: ${{secrets.EC2_HOST1}}
+          username: ubuntu
           # pemkey를 통해 해당 인스턴스에 접근
-          key: ${{secrets.EC2_PEMKEY}}    # SSH 개인키(PEM)를 GitHub Secrets로 관리
-          source: "./build/libs/*.jar"    # 로컬에서 복사할 파일 패턴
-          target: "/home/ubuntu"          # 원격 서버의 대상 경로(디렉터리)
+          key: ${{secrets.EC2_PEMKEY}}
+          source: "./build/libs/*.jar"
+          target: "/home/ubuntu"
 
       # 5) (EC2 #1) SSH 접속 후 JDK 설치/앱 실행
       - name: install java and run jar on ec2 inst1
-        uses: appleboy/ssh-action@master  # SSH로 원격 명령 실행
+        uses: appleboy/ssh-action@master
         with:
           host: ${{secrets.EC2_HOST1}}
           username: ubuntu
