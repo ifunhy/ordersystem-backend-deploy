@@ -45,3 +45,6 @@ jobs:
           -e SPRING_DATASOURCE_URL=jdbc:mariadb://${{ secrets.DB_HOST }}:3306/ordersystem \
           -e SPRING_DATASOURCE_USERNAME=admin \
           -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PW }} hyunjiki/ordersystem:latest
+
+
+          
