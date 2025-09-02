@@ -1,0 +1,44 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  redis:
+    host: xxxxxxxxxx
+    port: 6379
+  datasource:
+    url: jdbc:mariadb://xxxxxxx:3306/ordersystem
+    username: xxxxxx
+    password: yyyyyy
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+
+servlet:
+  multipart:
+    max-file-size: 1000MB
+    max-request-size: 1000MB
+
+cloud:
+  aws:
+    credentials:
+      access-key: xxxxxxx
+      secret-key: yyyyyyy
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: jiki-bucket
+
+jwt:
+  expirationAt: 1000 # 1000분 세팅
+  # 인코딩된 문자 32자 이상 필요 (특수문자 X)
+  # beyondaccesstokensecretkeybeyondaccesstokensecretkeybeyondaccesstokensecretkey
+  secretKeyAt: xxxxxxxxx
+  expirationRt: 50000
+  secretKeyRt: yyyyy
