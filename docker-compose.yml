@@ -7,16 +7,19 @@ services:
       - MYSQL_ROOT_PASSWORD=1234
       - MARIADB_DATABASE=ordersystem
     # docker compose 네트워크 내에서는 외부port 제거 가능
-    # ports:
-    #   - "3309:3306"
+    # 3306으로 열면 코드 유출 시 DB의 비밀번호 유출 가능성 존재
+    ports:
+      - "3306:3306"
   myredis:
     image: redis
     # ports:
     #   - "6388:6379"
   myordersystem:
-    build:
-      context: ./ordersystem
-      dockerfile: Dockerfile
+  # 로컬에서 빌드하는 게 아닌 docker hub에 있는 이미지를 가져오기 위해 주석처리
+    # build:
+    #   context: ./ordersystem
+    #   dockerfile: Dockerfile
+    image: hyunjiki/ordersystem:latest
     ports:
       - "8080:8080"
     depends_on:
@@ -24,5 +27,9 @@ services:
     restart: on-failure:10
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mariadb://mydb:3306/ordersystem
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1234
       - SPRING_REDIS_HOST=myredis
+      - JWT_SECRETKEYAT=YmV5b25kYWNjZXNzdG9rZW5zZWNyZXRrZXliZXlvbmRhY2Nlc3N0b2tlbnNlY3JldGtleWJleW9uZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5
+      - JWT_SECRETKEYRT=YmV5b25kYWNjZXNzdG9rZW5zZWNyZXRrZXliZXlvbmRhY2Nlc3N0b2tlbnNlY3JldGtleWJleW9uZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5YmV5b25kYWNjZXNzdG9rZW5zZWNyZXRrZXliZXlvbmRhY2Nlc3N0b2tlbnNlY3JldGtleWJleW9uZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5
     
